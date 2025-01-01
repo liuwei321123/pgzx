@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>PGZX</title>
+    <title>趣客任务助手</title>
     <meta charset="UTF-8">
     <style>
         body {
@@ -96,7 +96,6 @@
                 let pyodide = await loadPyodide({
                     indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/"
                 });
-                await pyodide.loadPackage("requests");
                 
                 pyodide.globals.set('tokens', tokens);
                 pyodide.globals.set('ua', ua);
