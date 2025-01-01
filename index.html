@@ -1,106 +1,112 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>脚本运行器</title>
+    <title>PGZX</title>
     <meta charset="UTF-8">
     <style>
         body {
-            font-family: "Microsoft YaHei", Arial, sans-serif;
+            font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            background-color: #f5f5f5;
         }
-        .form-group {
-            margin-bottom: 15px;
+        .input-area {
+            margin-bottom: 20px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        input[type="text"], select {
+        textarea {
             width: 100%;
-            padding: 8px;
-            margin-top: 5px;
+            height: 100px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
         }
-        .checkbox-group {
-            margin: 10px 0;
+        #output {
+            border: 1px solid #ccc;
+            padding: 10px;
+            min-height: 200px;
+            white-space: pre-wrap;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         button {
             padding: 10px 20px;
-            background-color: #4CAF50;
+            background-color: #1890ff;
             color: white;
             border: none;
             cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: #40a9ff;
         }
-        #result {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ddd;
+        h2 {
+            color: #333;
+            margin-top: 0;
         }
     </style>
 </head>
 <body>
-    <h1>脚本运行器</h1>
-    <div class="form-group">
-        <label for="token">Token:</label>
-        <input type="text" id="token" placeholder="请输入您的token">
+    <div class="input-area">
+        <h2>趣客任务助手</h2>
+        <p>请在下方输入账号token，多个账号请用&符号分隔：</p>
+        <textarea id="tokens" placeholder="请输入token，多个token之间用&分隔"></textarea>
+        <button onclick="startTask()">开始执行任务</button>
     </div>
-    <div class="checkbox-group">
-        <label>
-            <input type="checkbox" id="useProxy" checked> 使用代理
-        </label>
-    </div>
-    <div class="form-group" id="proxySettings">
-        <label for="proxyUrl">代理地址 (可选):</label>
-        <input type="text" id="proxyUrl" placeholder="请输入代理地址">
-    </div>
-    <button onclick="runScript()">运行脚本</button>
-    <div id="result"></div>
+    <div id="output"></div>
 
     <script>
-        document.getElementById('useProxy').addEventListener('change', function() {
-            document.getElementById('proxySettings').style.display = this.checked ? 'block' : 'none';
-        });
-
-        function runScript() {
-            const token = document.getElementById('token').value;
-            const useProxy = document.getElementById('useProxy').checked;
-            const proxyUrl = document.getElementById('proxyUrl').value;
-            const resultDiv = document.getElementById('result');
-            
-            if (!token) {
-                resultDiv.innerHTML = "错误: 请输入token";
-                resultDiv.style.color = 'red';
+        function startTask() {
+            const tokens = document.getElementById('tokens').value;
+            if (!tokens.trim()) {
+                alert('请输入token后再执行！');
                 return;
             }
+            const ua = navigator.userAgent;
             
-            resultDiv.innerHTML = "正在执行...";
-            resultDiv.style.color = 'blue';
+            // 清空输出区域
+            document.getElementById('output').textContent = '';
             
-            fetch('/run', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    token: token,
-                    use_proxy: useProxy,
-                    proxy_url: proxyUrl
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    resultDiv.innerHTML = `错误: ${data.error}`;
-                    resultDiv.style.color = 'red';
-                } else {
-                    resultDiv.innerHTML = `${data.result}`;
-                    resultDiv.style.color = 'green';
-                }
-            })
-            .catch(error => {
-                resultDiv.innerHTML = `错误: ${error}`;
-                resultDiv.style.color = 'red';
-            });
+            // 创建输出函数
+            window.print = function(text) {
+                const output = document.getElementById('output');
+                output.textContent += text + '\n';
+                output.scrollTop = output.scrollHeight;
+            };
+
+            // 显示开始执行提示
+            print('正在初始化运行环境，请稍候...');
+            
+            // 调用Python代码
+            runPythonCode(tokens, ua);
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+    <script>
+        async function runPythonCode(tokens, ua) {
+            try {
+                let pyodide = await loadPyodide({
+                    indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/"
+                });
+                await pyodide.loadPackage("requests");
+                
+                pyodide.globals.set('tokens', tokens);
+                pyodide.globals.set('ua', ua);
+                
+                const response = await fetch('script.py');
+                const pythonCode = await response.text();
+                await pyodide.runPythonAsync(pythonCode);
+            } catch (error) {
+                print('执行过程中出现错误：\n' + error.message + '\n\n如果加载失败，请刷新页面重试。');
+            }
         }
     </script>
 </body>
