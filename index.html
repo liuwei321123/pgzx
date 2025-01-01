@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>脚本运行器</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+        .checkbox-group {
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>脚本运行器</h1>
+    <div class="form-group">
+        <label for="token">Token:</label>
+        <input type="text" id="token" placeholder="请输入您的token">
+    </div>
+    <div class="checkbox-group">
+        <label>
+            <input type="checkbox" id="useProxy" checked> 使用代理
+        </label>
+    </div>
+    <div class="form-group" id="proxySettings">
+        <label for="proxyUrl">代理地址 (可选):</label>
+        <input type="text" id="proxyUrl" placeholder="请输入代理地址">
+    </div>
+    <button onclick="runScript()">运行脚本</button>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('useProxy').addEventListener('change', function() {
+            document.getElementById('proxySettings').style.display = this.checked ? 'block' : 'none';
+        });
+
+        function runScript() {
+            const token = document.getElementById('token').value;
+            const useProxy = document.getElementById('useProxy').checked;
+            const proxyUrl = document.getElementById('proxyUrl').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!token) {
+                resultDiv.innerHTML = "错误: 请输入token";
+                resultDiv.style.color = 'red';
+                return;
+            }
+            
+            resultDiv.innerHTML = "正在执行...";
+            resultDiv.style.color = 'blue';
+            
+            fetch('/run', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    token: token,
+                    use_proxy: useProxy,
+                    proxy_url: proxyUrl
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    resultDiv.innerHTML = `错误: ${data.error}`;
+                    resultDiv.style.color = 'red';
+                } else {
+                    resultDiv.innerHTML = `${data.result}`;
+                    resultDiv.style.color = 'green';
+                }
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `错误: ${error}`;
+                resultDiv.style.color = 'red';
+            });
+        }
+    </script>
+</body>
+</html> 
