@@ -9,14 +9,18 @@ import asyncio
 def print(text):
     js_print(str(text))
 
+print("Python环境加载成功...")
+
 async def make_request(url, method="GET", headers=None, data=None):
     try:
+        print(f"发送请求到: {url}")
         response = await pyfetch(
             url,
             method=method,
             headers=headers,
             body=data if data else None,
         )
+        print("请求成功，正在解析响应...")
         return await response.json()
     except Exception as e:
         print(f'网络请求出错：{str(e)}')
@@ -178,7 +182,8 @@ async def ladderTask(ua, token):
             print(res_json)
 
 async def main():
-    print('环境初始化完成，开始执行任务...')
+    print('开始执行任务...')
+    print(f'检测到 {len(tokens.split("&"))} 个账号')
     token_list = tokens.split("&")
     notfin = ["7328b1db-d001-4e6a-a9e6-6ae8d281ddbf", "e8f837b8-4317-4bf5-89ca-99f809bf9041",
               "65a4e35d-c8ae-4732-adb7-30f8788f2ea7", "73f9f146-4b9a-4d14-9d81-3a83f1204b74"]
