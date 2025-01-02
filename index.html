@@ -93,6 +93,9 @@
     <script>
         async function runPythonCode(tokens, ua) {
             try {
+                // 确保tokens已经设置到输入框
+                document.getElementById('tokens').value = tokens;
+                
                 let pyodide = await loadPyodide({
                     indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/"
                 });
