@@ -1,7 +1,7 @@
 import time
 import json
 import hashlib
-from js import tokens, ua  # 从JavaScript环境获取变量
+from js import tokens, USER_AGENT  # 从JavaScript环境获取变量
 from js import print as js_print
 from pyodide.http import pyfetch
 import asyncio
@@ -55,7 +55,7 @@ async def qd(token):
         'Host': 'userapi.qiekj.com',
         'Connection': 'Keep-Alive',
         'Accept-Encoding': 'gzip',
-        'User-Agent': ua
+        'User-Agent': USER_AGENT
     }
     data = {'token': token}
     
@@ -79,7 +79,7 @@ async def qd(token):
     else:
         print("获取签到列表失败")
 
-async def taskrequests(ua, url, token, data):
+async def taskrequests(url, token, data):
     t = str(int(time.time() * 1000))
     signs = await sign(t, url, token)
     
@@ -93,20 +93,20 @@ async def taskrequests(ua, url, token, data):
         'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
         'Host': 'userapi.qiekj.com',
         'Accept-Encoding': 'gzip',
-        'User-Agent': ua
+        'User-Agent': USER_AGENT
     }
     
     return await make_request(url=url, method='POST', headers=headers, data=data)
 
-async def tx(ua, token, tc):
+async def tx(token, tc):
     url = 'https://userapi.qiekj.com/task/completed'
     data = {'taskCode': tc, 'token': token}
-    return await taskrequests(ua, url, token, data)
+    return await taskrequests(url, token, data)
 
-async def appvideo(ua, token, i):
+async def appvideo(token, i):
     url = 'https://userapi.qiekj.com/task/completed'
     data = {'taskCode': 2, 'token': token}
-    res_json = await taskrequests(ua, url, token, data)
+    res_json = await taskrequests(url, token, data)
     if res_json and res_json['code'] == 0:
         print(f'第{i}次APP视频任务完成')
     else:
@@ -125,7 +125,7 @@ async def chaAD(ua, token, i):
         if res_json:
             print(res_json)
 
-async def sytask(ua, token):
+async def sytask(token):
     url = 'https://userapi.qiekj.com/task/completed'
     tasks = [
         {'taskCode': '8b475b42-df8b-4039-b4c1-f9a0174a611a', 'subtaskCode': '4a86e8b5-e46c-4dac-9e73-c6e3cf39c7d6'},
@@ -135,7 +135,7 @@ async def sytask(ua, token):
     
     for task in tasks:
         task['token'] = token
-        res_json = await taskrequests(ua, url, token, task)
+        res_json = await taskrequests(url, token, task)
         try:
             if res_json and res_json['code'] == 0 and res_json['data'] == True:
                 if task['subtaskCode'] == '4a86e8b5-e46c-4dac-9e73-c6e3cf39c7d6':
@@ -148,7 +148,7 @@ async def sytask(ua, token):
             print("首页浏览出错❌")
         await asyncio.sleep(1)
 
-async def ladderTask(ua, token):
+async def ladderTask(token):
     url = f'https://userapi.qiekj.com/ladderTask/ladderTaskForDay?token={token}'
     t = str(int(time.time() * 1000))
     signs = await sign(t, 'https://userapi.qiekj.com/ladderTask/ladderTaskForDay', token)
@@ -162,7 +162,7 @@ async def ladderTask(ua, token):
         'sign': signs,
         'Host': 'userapi.qiekj.com',
         'Accept-Encoding': 'gzip',
-        'User-Agent': ua
+        'User-Agent': USER_AGENT
     }
     
     res_json = await make_request(url=url, method='GET', headers=headers)
@@ -172,7 +172,7 @@ async def ladderTask(ua, token):
         for item in ladderRewardList:
             if item['isApplyReward'] == 1:
                 data = {'rewardCode': item['rewardCode'], 'token': token}
-                success = await taskrequests(ua, 'https://userapi.qiekj.com/ladderTask/applyLadderReward', token, data)
+                success = await taskrequests('https://userapi.qiekj.com/ladderTask/applyLadderReward', token, data)
                 print(success)
                 await asyncio.sleep(2)
         print('阶梯任务领奖完成')
