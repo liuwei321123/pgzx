@@ -1,7 +1,6 @@
 import time
 import json
 import hashlib
-from js import TOKENS  # 从JavaScript获取tokens
 from js import print as js_print
 from pyodide.http import pyfetch
 import asyncio
@@ -14,6 +13,9 @@ print("Python环境加载成功...")
 # 获取浏览器 UA
 from js import window
 USER_AGENT = window.navigator.userAgent
+
+# 获取tokens
+TOKENS = str(window.PYTHON_TOKENS)
 
 # 验证 tokens
 if not TOKENS:
