@@ -16,8 +16,13 @@ from js import window
 USER_AGENT = window.navigator.userAgent
 
 # 获取 tokens
-tokens = document.getElementById('tokens').value
-if not tokens:
+tokens_element = document.getElementById('tokens')
+if not tokens_element:
+    print("找不到tokens输入框！")
+    raise ValueError("页面元素不存在")
+
+tokens_value = str(tokens_element.value)
+if not tokens_value:
     print("请输入token后再执行！")
     raise ValueError("Token不能为空")
 
@@ -169,8 +174,8 @@ async def ladderTask(token):
 
 async def main():
     print('开始执行任务...')
-    print(f'检测到 {len(tokens.split("&"))} 个账号')
-    token_list = tokens.split("&")
+    token_list = tokens_value.split("&")
+    print(f'检测到 {len(token_list)} 个账号')
     notfin = ["7328b1db-d001-4e6a-a9e6-6ae8d281ddbf", "e8f837b8-4317-4bf5-89ca-99f809bf9041",
               "65a4e35d-c8ae-4732-adb7-30f8788f2ea7", "73f9f146-4b9a-4d14-9d81-3a83f1204b74"]
     
