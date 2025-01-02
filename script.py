@@ -194,7 +194,7 @@ async def main():
             
             # 执行首页浏览任务
             print("\n开始首页浏览任务")
-            await sytask(ua, tk)
+            await sytask(tk)
             await asyncio.sleep(2)
             
             # 执行签到
@@ -205,7 +205,7 @@ async def main():
             # 获取任务列表
             url = 'https://userapi.qiekj.com/task/list'
             data = {'token': tk}
-            res_json = await taskrequests(ua, url, tk, data)
+            res_json = await taskrequests(tk, url, tk, data)
             
             if res_json and res_json['code'] == 0:
                 items = res_json['data']['items']
@@ -214,7 +214,7 @@ async def main():
                         print("\n------任务分割线-----\n")
                         print(f"开始执行任务  ——  {item['title']}")
                         for _ in range(item["dailyTaskLimit"]):
-                            res = await tx(ua, tk, item["taskCode"])
+                            res = await tx(tk, item["taskCode"])
                             if res and res["code"] == 0:
                                 await asyncio.sleep(1)
                         print(f"{item['title']}  ——  任务完成")
@@ -223,24 +223,24 @@ async def main():
                 # 执行视频任务
                 print("\n开始执行视频任务")
                 for i in range(5):
-                    await appvideo(ua, tk, i + 1)
+                    await appvideo(tk, i + 1)
                     await asyncio.sleep(1)
                 
                 # 执行支付宝视频任务
                 print("\n开始执行支付宝视频任务")
                 for i in range(5):
-                    res = await tx(ua, tk, '9')
+                    res = await tx(tk, '9')
                     if res and res["code"] == 0:
                         print(f"第{i + 1}次支付宝视频完成")
                     await asyncio.sleep(1)
                 
                 # 执行阶梯任务
-                await ladderTask(ua, tk)
+                await ladderTask(tk)
                 
                 # 获取余额
                 url = 'https://userapi.qiekj.com/user/balance'
                 data = {'token': tk}
-                res_json = await taskrequests(ua, url, tk, data)
+                res_json = await taskrequests(tk, url, tk, data)
                 if res_json:
                     print(f"总积分：{res_json['data']['integral']}")
                 
