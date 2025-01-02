@@ -1,7 +1,7 @@
 import time
 import json
 import hashlib
-from js import tokens  # 只导入 tokens
+from js import document  # 导入 document 以获取 tokens
 from js import print as js_print
 from pyodide.http import pyfetch
 import asyncio
@@ -14,6 +14,12 @@ print("Python环境加载成功...")
 # 获取浏览器 UA
 from js import window
 USER_AGENT = window.navigator.userAgent
+
+# 获取 tokens
+tokens = document.getElementById('tokens').value
+if not tokens:
+    print("请输入token后再执行！")
+    raise ValueError("Token不能为空")
 
 async def make_request(url, method="GET", headers=None, data=None):
     try:
