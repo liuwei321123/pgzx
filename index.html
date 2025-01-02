@@ -97,8 +97,8 @@
                     indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/"
                 });
                 
-                // 将tokens直接传递给Python
-                pyodide.globals.set("TOKENS", tokens);
+                // 将变量添加到window对象
+                window.PYTHON_TOKENS = tokens;
                 
                 const response = await fetch('script.py');
                 const pythonCode = await response.text();
