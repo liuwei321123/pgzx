@@ -98,7 +98,7 @@
                 });
                 
                 pyodide.globals.set('tokens', tokens);
-                pyodide.globals.set('ua', ua);
+                pyodide.globals.set('USER_AGENT', ua);
                 
                 const response = await fetch('script.py');
                 const pythonCode = await response.text();
