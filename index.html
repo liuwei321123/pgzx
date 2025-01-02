@@ -97,9 +97,6 @@
                     indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/"
                 });
                 
-                pyodide.globals.set('tokens', tokens);
-                pyodide.globals.set('USER_AGENT', ua);
-                
                 const response = await fetch('script.py');
                 const pythonCode = await response.text();
                 await pyodide.runPythonAsync(pythonCode);
