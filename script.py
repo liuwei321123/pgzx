@@ -1,7 +1,7 @@
 import time
 import json
 import hashlib
-from js import tokens, USER_AGENT  # 从JavaScript环境获取变量
+from js import tokens  # 只导入 tokens
 from js import print as js_print
 from pyodide.http import pyfetch
 import asyncio
@@ -10,6 +10,10 @@ def print(text):
     js_print(str(text))
 
 print("Python环境加载成功...")
+
+# 获取浏览器 UA
+from js import window
+USER_AGENT = window.navigator.userAgent
 
 async def make_request(url, method="GET", headers=None, data=None):
     try:
@@ -39,12 +43,8 @@ async def sign(t, url, token):
     data = f'appSecret=nFU9pbG8YQoAe1kFh+E7eyrdlSLglwEJeA0wwHB1j5o=&channel=android_app&timestamp={t}&token={token}&version=1.59.3&{url[25:]}'
     return await sha256_encrypt(data)
 
-async def qd(token):
-    url = 'https://userapi.qiekj.com/signin/signInAcList'
-    t = str(int(time.time() * 1000))
-    signs = await sign(t, url, token)
-    
-    headers = {
+async def get_headers(token, t, signs):
+    return {
         'Authorization': token,
         'Version': '1.59.3',
         'channel': 'android_app',
@@ -57,6 +57,12 @@ async def qd(token):
         'Accept-Encoding': 'gzip',
         'User-Agent': USER_AGENT
     }
+
+async def qd(token):
+    url = 'https://userapi.qiekj.com/signin/signInAcList'
+    t = str(int(time.time() * 1000))
+    signs = await sign(t, url, token)
+    headers = await get_headers(token, t, signs)
     data = {'token': token}
     
     res_json = await make_request(url=url, method='POST', headers=headers, data=data)
@@ -65,10 +71,7 @@ async def qd(token):
         url = "https://userapi.qiekj.com/signin/doUserSignIn"
         t = str(int(time.time() * 1000))
         signs = await sign(t, url, token)
-        
-        headers['timestamp'] = t
-        headers['sign'] = signs
-        
+        headers = await get_headers(token, t, signs)
         data = {'activityId': '600001', 'token': token}
         res_json = await make_request(url=url, method='POST', headers=headers, data=data)
         
@@ -82,20 +85,7 @@ async def qd(token):
 async def taskrequests(url, token, data):
     t = str(int(time.time() * 1000))
     signs = await sign(t, url, token)
-    
-    headers = {
-        'Authorization': token,
-        'Version': '1.59.3',
-        'channel': 'android_app',
-        'phoneBrand': 'Redmi',
-        'timestamp': t,
-        'sign': signs,
-        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-        'Host': 'userapi.qiekj.com',
-        'Accept-Encoding': 'gzip',
-        'User-Agent': USER_AGENT
-    }
-    
+    headers = await get_headers(token, t, signs)
     return await make_request(url=url, method='POST', headers=headers, data=data)
 
 async def tx(token, tc):
@@ -114,10 +104,10 @@ async def appvideo(token, i):
         if res_json:
             print(res_json)
 
-async def chaAD(ua, token, i):
+async def chaAD(token, i):  # 移除了 ua 参数
     url = 'https://userapi.qiekj.com/task/completed'
     data = {'taskCode': '18893134-715b-4307-af1c-b5737c70f58d', 'token': token}
-    res_json = await taskrequests(ua, url, token, data)
+    res_json = await taskrequests(url, token, data)
     if res_json and res_json['code'] == 0:
         print(f'第{i}次APP视频任务完成')
     else:
@@ -152,18 +142,8 @@ async def ladderTask(token):
     url = f'https://userapi.qiekj.com/ladderTask/ladderTaskForDay?token={token}'
     t = str(int(time.time() * 1000))
     signs = await sign(t, 'https://userapi.qiekj.com/ladderTask/ladderTaskForDay', token)
-    
-    headers = {
-        'Authorization': token,
-        'Version': '1.57.4',
-        'channel': 'android_app',
-        'phoneBrand': 'Redmi',
-        'timestamp': t,
-        'sign': signs,
-        'Host': 'userapi.qiekj.com',
-        'Accept-Encoding': 'gzip',
-        'User-Agent': USER_AGENT
-    }
+    headers = await get_headers(token, t, signs)
+    headers['Version'] = '1.57.4'  # 特殊版本号
     
     res_json = await make_request(url=url, method='GET', headers=headers)
     
@@ -205,7 +185,7 @@ async def main():
             # 获取任务列表
             url = 'https://userapi.qiekj.com/task/list'
             data = {'token': tk}
-            res_json = await taskrequests(tk, url, tk, data)
+            res_json = await taskrequests(url, tk, data)
             
             if res_json and res_json['code'] == 0:
                 items = res_json['data']['items']
@@ -240,7 +220,7 @@ async def main():
                 # 获取余额
                 url = 'https://userapi.qiekj.com/user/balance'
                 data = {'token': tk}
-                res_json = await taskrequests(tk, url, tk, data)
+                res_json = await taskrequests(url, tk, data)
                 if res_json:
                     print(f"总积分：{res_json['data']['integral']}")
                 
